@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # Fresh Fedora + i3wm restore for ~/i3wm-dotfiles
-# Modular, idempotent-ish steps. Re-run safely; failed steps are reported and skipped past.
+# PATH for interactive shells lives only in the stowed ~/.zshrc (single source of truth).
+# This script only refreshes PATH for the *current install session*.
 #
 # Usage:
 #   bash ~/i3wm-dotfiles/extra/restore-fedora.sh
-#   DOTFILES_DIR=/path/to/i3wm-dotfiles bash extra/restore-fedora.sh
 
 set -u
 set -o pipefail
@@ -12,32 +12,47 @@ set -o pipefail
 DOTFILES_DIR="${DOTFILES_DIR:-$HOME/i3wm-dotfiles}"
 FAILED=()
 STARTED_AT=$(date -Iseconds)
-
-# -----------------------------------------------------------------------------
-# helpers
-# -----------------------------------------------------------------------------
+ZSHRC_TRACKED="$DOTFILES_DIR/zsh/.zshrc"
 
 log()  { printf '\n\033[1;34m==>\033[0m %s\n' "$*"; }
 ok()   { printf '  \033[1;32m✓\033[0m %s\n' "$*"; }
 warn() { printf '  \033[1;33m!\033[0m %s\n' "$*"; }
 err()  { printf '  \033[1;31m✗\033[0m %s\n' "$*"; }
 
-need_cmd() {
-  command -v "$1" >/dev/null 2>&1
-}
+need_cmd() { command -v "$1" >/dev/null 2>&1; }
 
-# Keep the install session PATH useful before zshrc is active.
 export PATH="${HOME}/.local/bin:${HOME}/.cargo/bin:${HOME}/.bun/bin:${HOME}/.opencode/bin:${HOME}/.cursor/bin:${PATH}"
 
 refresh_path() {
   export PATH="${HOME}/.local/bin:${HOME}/.cargo/bin:${HOME}/.bun/bin:${HOME}/.opencode/bin:${HOME}/.cursor/bin:${PATH}"
   # shellcheck disable=SC1090
   [[ -f "${HOME}/.cargo/env" ]] && source "${HOME}/.cargo/env"
-  # shellcheck disable=SC1090
-  [[ -f "${HOME}/.bun/bin/bun" ]] && export BUN_INSTALL="${HOME}/.bun" && export PATH="${BUN_INSTALL}/bin:${PATH}"
+  export BUN_INSTALL="${HOME}/.bun"
+  export PATH="${BUN_INSTALL}/bin:${PATH}"
   if [[ -s "${HOME}/.nvm/nvm.sh" ]]; then
     # shellcheck disable=SC1090
     source "${HOME}/.nvm/nvm.sh"
+  fi
+}
+
+# Installers sometimes append to ~/.zshrc — restore our tracked file afterward.
+guard_zshrc() {
+  if [[ -f "$ZSHRC_TRACKED" ]]; then
+    cp -a "$ZSHRC_TRACKED" /tmp/i3wm-zshrc.guard
+  fi
+}
+
+restore_zshrc_if_clobbered() {
+  [[ -f /tmp/i3wm-zshrc.guard ]] || return 0
+  # Writes through a symlink mutate the repo file — restore tracked content.
+  if ! cmp -s /tmp/i3wm-zshrc.guard "$ZSHRC_TRACKED" 2>/dev/null; then
+    warn "restoring tracked zsh/.zshrc after installer modified it"
+    cp -a /tmp/i3wm-zshrc.guard "$ZSHRC_TRACKED"
+  fi
+  # Some installers replace the symlink with a real file — drop it for stow.
+  if [[ -e "$HOME/.zshrc" && ! -L "$HOME/.zshrc" ]]; then
+    warn "installer replaced ~/.zshrc symlink; removing so stow can relink"
+    mv "$HOME/.zshrc" "$HOME/.zshrc.installer-clobber"
   fi
 }
 
@@ -55,7 +70,6 @@ run_step() {
 }
 
 have_copr() {
-  # dnf5/dnf4: list enabled COPRs
   dnf copr list 2>/dev/null | grep -Fq "$1"
 }
 
@@ -67,26 +81,6 @@ ensure_copr() {
   fi
   sudo dnf copr enable -y "$name"
 }
-
-# Append a block to a file once (marker-guarded).
-ensure_block() {
-  local file=$1 marker=$2 block=$3
-  mkdir -p "$(dirname "$file")"
-  touch "$file"
-  if grep -Fq "$marker" "$file" 2>/dev/null; then
-    ok "PATH block already present in $file ($marker)"
-    return 0
-  fi
-  {
-    printf '\n# %s\n' "$marker"
-    printf '%s\n' "$block"
-  } >>"$file"
-  ok "Added PATH block to $file ($marker)"
-}
-
-# -----------------------------------------------------------------------------
-# 0) DNF config + upgrade
-# -----------------------------------------------------------------------------
 
 configure_dnf() {
   sudo tee /etc/dnf/dnf.conf >/dev/null <<'EOF'
@@ -100,43 +94,28 @@ minrate=10k
 EOF
 }
 
-step_dnf_config() {
-  configure_dnf
-}
-
-step_dnf_upgrade() {
-  sudo dnf upgrade -y
-}
-
-# -----------------------------------------------------------------------------
-# 1) Core packages (NO starship — that comes from COPR)
-# -----------------------------------------------------------------------------
+step_dnf_config() { configure_dnf; }
+step_dnf_upgrade() { sudo dnf upgrade -y; }
 
 step_core_packages() {
+  # Fedora 45+: nm-connection-editor replaces NetworkManager-gnome; dex is dex-autostart
   sudo dnf install -y \
-    git curl wget stow zsh zoxide fzf eza bat \
+    git curl wget stow zsh zoxide fzf eza bat gh \
     golang fd-find ripgrep fontconfig util-linux-user flatpak \
     python3-pip \
     i3 i3status i3lock xss-lock dmenu \
-    NetworkManager-gnome dex \
+    nm-connection-editor dex-autostart \
     wmctrl xdotool \
     xorg-x11-xkb-utils \
     nautilus \
-    jq
+    jq \
+    openssh-clients
 }
-
-# -----------------------------------------------------------------------------
-# Starship via COPR (required by zshrc; not part of plain core dnf set)
-# -----------------------------------------------------------------------------
 
 step_starship() {
   ensure_copr "atim/starship"
   sudo dnf install -y starship
 }
-
-# -----------------------------------------------------------------------------
-# 2) zsh login shell
-# -----------------------------------------------------------------------------
 
 step_zsh_shell() {
   local zsh_path
@@ -149,12 +128,7 @@ step_zsh_shell() {
   sudo chsh -s "$zsh_path" "$USER"
 }
 
-# -----------------------------------------------------------------------------
-# 3) Go (dnf already) + Rust (rustup), PATH
-# -----------------------------------------------------------------------------
-
 step_golang() {
-  # ensured by core; verify
   need_cmd go || sudo dnf install -y golang
   go version
 }
@@ -167,25 +141,9 @@ step_rust() {
       | sh -s -- -y --no-modify-path
   fi
   refresh_path
-  # Persist PATH for interactive zsh (stowed zshrc also sources cargo if present)
-  ensure_block "$HOME/.zshrc.local" "i3wm-dotfiles:cargo" \
-'source "$HOME/.cargo/env" 2>/dev/null'
-  # Prefer tracked zshrc when it is already the stow target
-  if [[ -L "$HOME/.zshrc" ]]; then
-    local zshrc
-    zshrc=$(readlink -f "$HOME/.zshrc")
-    if ! grep -Fq '.cargo/env' "$zshrc" 2>/dev/null; then
-      ensure_block "$zshrc" "i3wm-dotfiles:cargo" \
-'[[ -f "$HOME/.cargo/env" ]] && source "$HOME/.cargo/env"'
-    fi
-  fi
   rustc --version
   cargo --version
 }
-
-# -----------------------------------------------------------------------------
-# Ghostty + Vicinae (needed by these dotfiles)
-# -----------------------------------------------------------------------------
 
 step_ghostty() {
   ensure_copr "scottames/ghostty"
@@ -205,18 +163,10 @@ step_i3_layouts() {
   need_cmd i3-layouts
 }
 
-# -----------------------------------------------------------------------------
-# 4) Helium
-# -----------------------------------------------------------------------------
-
 step_helium() {
   ensure_copr "imput/helium"
   sudo dnf install -y helium-bin
 }
-
-# -----------------------------------------------------------------------------
-# 5) Charm (glow)
-# -----------------------------------------------------------------------------
 
 step_charm() {
   if [[ ! -f /etc/yum.repos.d/charm.repo ]]; then
@@ -232,29 +182,20 @@ step_charm() {
   sudo dnf install -y glow
 }
 
-# -----------------------------------------------------------------------------
-# 6) Bun + PATH
-# -----------------------------------------------------------------------------
-
 step_bun() {
+  guard_zshrc
   if need_cmd bun; then
     ok "bun already installed: $(bun --version)"
   else
     curl -fsSL https://bun.sh/install | bash
   fi
+  restore_zshrc_if_clobbered
   refresh_path
-  ensure_block "$HOME/.zshrc.local" "i3wm-dotfiles:bun" \
-'export BUN_INSTALL="$HOME/.bun"
-export PATH="$BUN_INSTALL/bin:$PATH"
-[[ -s "$HOME/.bun/_bun" ]] && source "$HOME/.bun/_bun"'
   bun --version
 }
 
-# -----------------------------------------------------------------------------
-# 7) NVM + Node LTS/Current + pnpm
-# -----------------------------------------------------------------------------
-
 step_nvm_node_pnpm() {
+  guard_zshrc
   export NVM_DIR="${HOME}/.nvm"
   if [[ ! -s "${NVM_DIR}/nvm.sh" ]]; then
     curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh \
@@ -262,60 +203,71 @@ step_nvm_node_pnpm() {
   else
     ok "nvm already present"
   fi
+  restore_zshrc_if_clobbered
+  # nvm.sh trips over nounset (PROVIDED_VERSION); relax for this step only
+  set +u
   # shellcheck disable=SC1090
   source "${NVM_DIR}/nvm.sh"
   nvm install --lts
-  nvm install node
-  nvm alias default 'lts/*'
-  nvm use --lts
-  corepack enable
-  corepack prepare pnpm@latest --activate
-  nvm use node
-  corepack enable
-  corepack prepare pnpm@latest --activate
+  # Install "current" when stable; drop prereleases
+  nvm install node || true
+  local node_ver
+  node_ver=$(nvm version node 2>/dev/null || echo "")
+  if [[ "$node_ver" == *alpha* || "$node_ver" == *beta* || "$node_ver" == *rc* ]]; then
+    warn "nvm 'node' is prerelease ($node_ver); removing and defaulting to LTS"
+    nvm use --lts
+    nvm uninstall "$node_ver" || true
+  fi
   nvm alias default 'lts/*'
   nvm use default
-  ensure_block "$HOME/.zshrc.local" "i3wm-dotfiles:nvm-hint" \
-'# Node via nvm is configured in ~/.zshrc (stowed). Default node bin is on PATH there.'
+  set -u
+
+  # Node 26+ may ship without corepack in PATH — install pnpm directly.
+  # Installer appends to ~/.zshrc; guard + restore keeps our single SSOT.
+  export PNPM_HOME="${HOME}/.local/share/pnpm"
+  export PATH="${PNPM_HOME}/bin:${PATH}"
+  if need_cmd pnpm; then
+    ok "pnpm already installed: $(pnpm --version)"
+  else
+    guard_zshrc
+    curl -fsSL https://get.pnpm.io/install.sh | SHELL=zsh PNPM_HOME="$PNPM_HOME" bash -
+    restore_zshrc_if_clobbered
+    # pnpm may replace a symlink ~/.zshrc with a real file — force stow shape
+    if [[ -e "$HOME/.zshrc" && ! -L "$HOME/.zshrc" ]]; then
+      warn "pnpm replaced ~/.zshrc symlink; restoring stow link"
+      rm -f "$HOME/.zshrc"
+      (cd "$DOTFILES_DIR" && stow -v --no-folding zsh)
+    fi
+  fi
+  refresh_path
+  export PATH="${PNPM_HOME}/bin:${PATH}"
   node --version
   pnpm --version
 }
 
-# -----------------------------------------------------------------------------
-# 8 / 12) uv
-# -----------------------------------------------------------------------------
-
 step_uv() {
+  guard_zshrc
   if need_cmd uv; then
     ok "uv already installed: $(uv --version)"
   else
     curl -LsSf https://astral.sh/uv/install.sh | sh
   fi
+  restore_zshrc_if_clobbered
   refresh_path
-  ensure_block "$HOME/.zshrc.local" "i3wm-dotfiles:uv" \
-'export PATH="$HOME/.local/bin:$PATH"'
   uv --version
 }
 
-# -----------------------------------------------------------------------------
-# 9 / 13) OpenCode
-# -----------------------------------------------------------------------------
-
 step_opencode() {
+  guard_zshrc
   if need_cmd opencode; then
     ok "opencode already installed"
   else
     curl -fsSL https://opencode.ai/v2/install | bash -s -- --no-modify-path
   fi
+  restore_zshrc_if_clobbered
   refresh_path
-  ensure_block "$HOME/.zshrc.local" "i3wm-dotfiles:opencode" \
-'export PATH="$HOME/.opencode/bin:$PATH"'
   need_cmd opencode && opencode --version || true
 }
-
-# -----------------------------------------------------------------------------
-# 10) VS Code
-# -----------------------------------------------------------------------------
 
 step_vscode() {
   if need_cmd code; then
@@ -336,23 +288,21 @@ step_vscode() {
   sudo dnf install -y code
 }
 
-# -----------------------------------------------------------------------------
-# 11) Cursor CLI
-# -----------------------------------------------------------------------------
-
 step_cursor_cli() {
+  guard_zshrc
   curl -fsS https://cursor.com/install | bash
+  restore_zshrc_if_clobbered
   refresh_path
-  ensure_block "$HOME/.zshrc.local" "i3wm-dotfiles:cursor-cli" \
-'export PATH="$HOME/.local/bin:$HOME/.cursor/bin:$PATH"'
-  # binary name varies (cursor / agent); report what we got
-  need_cmd cursor && cursor --version || true
-  need_cmd agent && ok "cursor agent present" || true
+  # Official installer ships `agent` / `cursor-agent` (not always `cursor`)
+  if need_cmd agent || need_cmd cursor-agent || need_cmd cursor; then
+    need_cmd agent && agent --version 2>/dev/null || true
+    need_cmd cursor-agent && ok "cursor-agent present" || true
+    need_cmd cursor && cursor --version || true
+    return 0
+  fi
+  err "cursor agent binary not found on PATH"
+  return 1
 }
-
-# -----------------------------------------------------------------------------
-# 14) Flathub + OBS + OnlyOffice
-# -----------------------------------------------------------------------------
 
 step_flatpaks() {
   flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
@@ -360,51 +310,50 @@ step_flatpaks() {
   flatpak install -y flathub org.onlyoffice.desktopeditors
 }
 
-# -----------------------------------------------------------------------------
-# 15) Submodules + stow + fonts
-# -----------------------------------------------------------------------------
+step_github_cli() {
+  need_cmd gh || sudo dnf install -y gh
+  gh --version
+}
 
 step_dotfiles() {
   [[ -d "$DOTFILES_DIR" ]] || { err "DOTFILES_DIR missing: $DOTFILES_DIR"; return 1; }
   cd "$DOTFILES_DIR"
 
   git submodule update --init --recursive
-
   mkdir -p "$HOME/.config/vicinae"
 
-  # Relocate blocking real ~/.zshrc if needed (do not clobber a symlink)
+  # Remove leftover local override — PATH belongs only in stowed .zshrc
+  rm -f "$HOME/.zshrc.local"
+
   if [[ -e "$HOME/.zshrc" && ! -L "$HOME/.zshrc" ]]; then
     warn "moving real ~/.zshrc aside so stow can link"
     mv "$HOME/.zshrc" "$HOME/.zshrc.pre-restore"
   fi
 
+  # Vicinae may rewrite settings.json as a real file; prefer stowed SSOT
+  if [[ -e "$HOME/.config/vicinae/settings.json" && ! -L "$HOME/.config/vicinae/settings.json" ]]; then
+    warn "moving real vicinae settings.json aside so stow can link"
+    mv "$HOME/.config/vicinae/settings.json" "$HOME/.config/vicinae/settings.json.pre-restore"
+  fi
+
   stow -v --no-folding \
     i3 vicinae zsh starship ghostty fonts git code cursor
 
-  # Ensure interactive zsh loads cargo + optional local overrides after stow
-  if [[ -L "$HOME/.zshrc" ]]; then
-    local zshrc
-    zshrc=$(readlink -f "$HOME/.zshrc")
-    if ! grep -Fq '.cargo/env' "$zshrc" 2>/dev/null; then
-      ensure_block "$zshrc" "i3wm-dotfiles:cargo" \
-'[[ -f "$HOME/.cargo/env" ]] && source "$HOME/.cargo/env"'
-    fi
-    if ! grep -Fq '.zshrc.local' "$zshrc" 2>/dev/null; then
-      ensure_block "$zshrc" "i3wm-dotfiles:zshrc.local" \
-'[[ -f "$HOME/.zshrc.local" ]] && source "$HOME/.zshrc.local"'
-    fi
-  fi
-
+  # JetBrainsMono NF + Plus Jakarta Sans (fontconfig prefers them)
   fc-cache -fv
-}
+  fc-list : family | grep -qi 'JetBrainsMono' \
+    || { err "JetBrainsMono Nerd Font not visible to fontconfig"; return 1; }
+  ok "fonts: JetBrainsMono Nerd Font available"
 
-# -----------------------------------------------------------------------------
-# main
-# -----------------------------------------------------------------------------
+  # Enforce single .zshrc SSOT
+  [[ -L "$HOME/.zshrc" ]] || { err "~/.zshrc is not a symlink to stowed zsh/.zshrc"; return 1; }
+  [[ ! -e "$HOME/.zshrc.local" ]] || { err ".zshrc.local must not exist"; return 1; }
+}
 
 main() {
   log "i3wm-dotfiles restore starting ($STARTED_AT)"
   log "DOTFILES_DIR=$DOTFILES_DIR"
+  guard_zshrc
 
   run_step "Configure /etc/dnf/dnf.conf" step_dnf_config
   run_step "Upgrade system packages" step_dnf_upgrade
@@ -412,20 +361,24 @@ main() {
   run_step "Install starship from COPR" step_starship
   run_step "Set zsh as login shell" step_zsh_shell
   run_step "Verify Go toolchain" step_golang
-  run_step "Install Rust (rustup) + PATH" step_rust
+  run_step "Install Rust (rustup)" step_rust
   run_step "Install Ghostty (COPR)" step_ghostty
   run_step "Install Vicinae (COPR) + user service" step_vicinae
   run_step "Install i3-layouts (pip --user)" step_i3_layouts
   run_step "Install Helium" step_helium
   run_step "Install Charm (glow)" step_charm
-  run_step "Install Bun + PATH" step_bun
+  run_step "Install Bun" step_bun
   run_step "Install NVM, Node LTS/Current, pnpm" step_nvm_node_pnpm
-  run_step "Install uv + PATH" step_uv
-  run_step "Install OpenCode + PATH" step_opencode
+  run_step "Install uv" step_uv
+  run_step "Install OpenCode" step_opencode
   run_step "Install VS Code" step_vscode
   run_step "Install Cursor CLI" step_cursor_cli
   run_step "Install Flatpak apps (OBS, OnlyOffice)" step_flatpaks
+  run_step "Install GitHub CLI" step_github_cli
   run_step "Submodules + stow packages + fc-cache" step_dotfiles
+
+  restore_zshrc_if_clobbered
+  rm -f "$HOME/.zshrc.local"
 
   printf '\n'
   if ((${#FAILED[@]})); then
@@ -437,7 +390,17 @@ main() {
 
   ok "Restore finished successfully."
   printf 'Open a new terminal (or log out/in) so zsh + PATH are active.\n'
-  printf 'Optional: apply Firefox prefs from extra/firefox_user.js to a profile.\n'
+  printf 'Single shell config: stowed ~/.zshrc only (no .zshrc.local).\n'
+
+  # Only after a fully successful run — interactive; skip if already logged in
+  if need_cmd gh; then
+    if gh auth status -h github.com >/dev/null 2>&1; then
+      ok "gh already logged in"
+    else
+      log "GitHub CLI login (post-success)"
+      gh auth login
+    fi
+  fi
 }
 
 main "$@"

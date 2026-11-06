@@ -23,6 +23,13 @@
 		"files:search"
 	],
 
+	"font": {
+		"rendering": "native",
+		"normal": {
+			"family": "JetBrainsMono Nerd Font"
+		}
+	},
+
 	"theme": {
 		"dark": {
 			"name": "vicinae-dark",

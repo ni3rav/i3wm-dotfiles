@@ -1,10 +1,14 @@
 autoload -Uz compinit
 compinit
 
+# --- PATH (single source of truth) ----------------------------------------
 export PATH="$HOME/.local/bin:$PATH"
+export PATH="$HOME/.cargo/bin:$PATH"
+export PATH="$HOME/.bun/bin:$PATH"
 export PATH="$HOME/.opencode/bin:$PATH"
 export PATH="$HOME/.cursor/bin:$PATH"
 [[ -f "$HOME/.cargo/env" ]] && source "$HOME/.cargo/env"
+
 export EDITOR="vi"
 
 # History
@@ -30,10 +34,9 @@ alias glo="git log --oneline --graph"
 alias vpnc="protonvpn connect"
 alias vpnd="protonvpn disconnect"
 
+# --- Node (nvm: lazy-load; default node bin on PATH) ----------------------
 export NVM_DIR="$HOME/.nvm"
 
-# Put the default Node bin on PATH. nvm.sh is thousands of lines, so it loads
-# only when `nvm` itself is run.
 _nvm_default_bin() {
   local spec="$NVM_DIR/alias/default" step=0 matches
   [[ -r $spec ]] || return 1
@@ -69,18 +72,22 @@ nvm() {
   nvm "$@"
 }
 
+# --- Bun ------------------------------------------------------------------
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
 [[ -s "$HOME/.bun/_bun" ]] && source "$HOME/.bun/_bun"
 
+# --- pnpm -----------------------------------------------------------------
 export PNPM_HOME="$HOME/.local/share/pnpm"
 case ":$PATH:" in
-    *":$PNPM_HOME:"*) ;;
-    *) export PATH="$PNPM_HOME:$PATH" ;;
+  *":$PNPM_HOME/bin:"*) ;;
+  *) export PATH="$PNPM_HOME/bin:$PATH" ;;
 esac
 
+# --- Prompt ---------------------------------------------------------------
 eval "$(starship init zsh)"
 
+# --- Plugins (submodules under ~/.zsh/plugins) ----------------------------
 source ~/.zsh/plugins/zsh-vi-mode/zsh-vi-mode.plugin.zsh
 # add-zle-hook-widget before zvm_init makes zsh 5.9 SIGSEGV in `$(zle -l)`.
 zvm_after_init_commands+=(
@@ -91,6 +98,3 @@ zvm_after_init_commands+=(
 autoload -Uz edit-command-line
 zle -N edit-command-line
 bindkey '^X^E' edit-command-line
-
-# Machine-local overrides (PATH snippets written by extra/restore-fedora.sh)
-[[ -f "$HOME/.zshrc.local" ]] && source "$HOME/.zshrc.local"
