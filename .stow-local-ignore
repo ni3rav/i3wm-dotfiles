@@ -6,6 +6,11 @@
 \.github
 \.cursor
 
+# Agent skills (repo-local; never symlink into $HOME)
+\.skills
+^/\.skills
+^/\.skills/.*
+
 # Repo docs / license
 ^/README.*
 ^/LICENSE.*

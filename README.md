@@ -14,7 +14,9 @@ Stow creates **symlinks** from `$HOME` into this repo. Editing a “home” path
 So normal edits are tracked by Git. Commit from this directory (`git status` / `git commit`).  
 Do **not** replace a symlink with a regular file, or Stow/Git will diverge.
 
-`extra/` is **not** stowed (see `.stow-local-ignore`). Change those files only inside the repo.
+`extra/` and `.skills/` are **not** stowed (see `.stow-local-ignore`). Change those files only inside the repo.
+
+Agent skill (user-invoked): `.skills/i3wm-dotfiles/` — invoke when editing packages, stowing, or restoring.
 
 ## Packages
 
