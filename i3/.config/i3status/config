@@ -1,0 +1,45 @@
+# i3status — compact dark-friendly status line (battery, network, audio, clock)
+# See: man i3status
+
+general {
+        colors = true
+        interval = 5
+        color_good = "#83CAFA"
+        color_degraded = "#E5C07B"
+        color_bad = "#DB3279"
+}
+
+order += "wireless _first_"
+order += "ethernet _first_"
+order += "battery all"
+order += "volume master"
+order += "tztime local"
+
+wireless _first_ {
+        format_up = "Wi-Fi %essid %quality"
+        format_down = "Wi-Fi down"
+}
+
+ethernet _first_ {
+        format_up = "ETH %ip"
+        format_down = ""
+}
+
+battery all {
+        format = "%status %percentage"
+        format_down = "No battery"
+        last_full_capacity = true
+        integer_battery_capacity = true
+        low_threshold = 15
+        threshold_type = percentage
+}
+
+volume master {
+        format = "Vol %volume"
+        format_muted = "Muted"
+        device = "pulse"
+}
+
+tztime local {
+        format = "%a %Y-%m-%d %H:%M"
+}

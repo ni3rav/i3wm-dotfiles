@@ -1,0 +1,15 @@
+# i3 Window Manager Configuration (modular)
+# Fragments live in config.d/ and are loaded in numeric order.
+# Requires i3 >= 4.20 (include directive). Verified on i3 4.25.1.
+
+include config.d/*.conf
+
+# --- i3-layouts (eliep/i3-layouts) ----------------------------------------
+# Must live in THIS file: i3-layouts reads i3's get_config payload, which does
+# not expand include directives. Spiral = alternating h/v splits per window.
+set $i3l spiral to workspace 1
+set $i3l spiral to workspace 2
+set $i3l spiral to workspace 3
+set $i3l spiral to workspace 4
+set $i3l spiral to workspace 5
+set $i3l spiral to workspace 6

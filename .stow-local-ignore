@@ -1,0 +1,28 @@
+# Version control (never symlink into $HOME)
+\.git
+\.gitignore
+\.gitattributes
+\.gitmodules
+\.github
+
+# Repo docs / license (stay in the stow directory only)
+^/README.*
+^/LICENSE.*
+^/COPYING.*
+^/CHANGELOG.*
+\.md$
+
+# Editor / OS junk
+\.DS_Store
+\.idea
+\.vscode
+.+~
+\#.*\#
+.*\.swp
+.*\.swo
+
+# Build / cache artifacts if they ever appear inside packages
+__pycache__
+.*\.py[cod]
+\.venv
+venv

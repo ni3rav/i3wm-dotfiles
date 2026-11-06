@@ -1,0 +1,32 @@
+// Managed by GNU Stow (package: vicinae). Only this file is symlinked.
+// Merged with defaults from `vicinae config default`.
+// Docs: https://docs.vicinae.com/config
+//
+// Global Super+Space / Super+V / Super+E / Super+, / Alt+Tab are bound in i3
+// via deeplinks so they work reliably under X11 + i3. Leaving Vicinae's own
+// toggle at the Linux default (Super+Ctrl+Space) avoids a double-grab on
+// Super+Space.
+
+{
+	"$schema": "https://vicinae.com/schemas/config.json",
+
+	"search_files_in_root": false,
+
+	"favorites": [
+		"clipboard:history",
+		"files:search",
+		"core:search-emojis",
+		"wm:switch-windows"
+	],
+
+	"fallbacks": [
+		"files:search"
+	],
+
+	"theme": {
+		"dark": {
+			"name": "vicinae-dark",
+			"icon_theme": "auto"
+		}
+	}
+}
