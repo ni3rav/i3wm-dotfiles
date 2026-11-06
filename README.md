@@ -29,7 +29,6 @@ Do **not** replace a symlink with a regular file, or Stow/Git will diverge.
 | `git` | `~/.gitconfig` | |
 | `code` | `~/.config/Code/User/…` | settings + keybindings only |
 | `cursor` | `~/.config/Cursor/User/…` | settings + keybindings only |
-| `restore-fedora` | `~/.local/bin/restore-fedora`, `shepherd` | |
 
 ## Clone
 
@@ -42,7 +41,7 @@ cd ~/i3wm-dotfiles
 
 ```bash
 mkdir -p ~/.config/vicinae
-stow -v --no-folding i3 vicinae zsh starship ghostty fonts git code cursor restore-fedora
+stow -v --no-folding i3 vicinae zsh starship ghostty fonts git code cursor
 fc-cache -fv   # after fonts
 ```
 
@@ -65,4 +64,4 @@ git submodule update --init --recursive
 
 - Vicinae: `systemctl --user enable --now vicinae.service`
 - Spiral: `pip install --user i3-layouts`
-- Full package restore: `extra/scripts/restore-fedora.sh` (run deliberately)
+- Fresh install: `bash extra/restore-fedora.sh` (edits dnf.conf, installs toolchain, stows)

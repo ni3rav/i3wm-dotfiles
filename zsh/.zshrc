@@ -3,6 +3,8 @@ compinit
 
 export PATH="$HOME/.local/bin:$PATH"
 export PATH="$HOME/.opencode/bin:$PATH"
+export PATH="$HOME/.cursor/bin:$PATH"
+[[ -f "$HOME/.cargo/env" ]] && source "$HOME/.cargo/env"
 export EDITOR="vi"
 
 # History
@@ -89,3 +91,6 @@ zvm_after_init_commands+=(
 autoload -Uz edit-command-line
 zle -N edit-command-line
 bindkey '^X^E' edit-command-line
+
+# Machine-local overrides (PATH snippets written by extra/restore-fedora.sh)
+[[ -f "$HOME/.zshrc.local" ]] && source "$HOME/.zshrc.local"
