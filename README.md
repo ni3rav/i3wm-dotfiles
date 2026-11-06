@@ -2,31 +2,67 @@
 
 Fedora + i3 (X11) dotfiles managed with [GNU Stow](https://www.gnu.org/software/stow/).
 
+## How Stow + Git work
+
+Stow creates **symlinks** from `$HOME` into this repo. Editing a “home” path edits the file in the repo:
+
+```text
+~/.zshrc  →  ~/i3wm-dotfiles/zsh/.zshrc
+~/.config/i3/config  →  ~/i3wm-dotfiles/i3/.config/i3/config
+```
+
+So normal edits are tracked by Git. Commit from this directory (`git status` / `git commit`).  
+Do **not** replace a symlink with a regular file, or Stow/Git will diverge.
+
+`extra/` is **not** stowed (see `.stow-local-ignore`). Change those files only inside the repo.
+
 ## Packages
 
-| Package   | Symlinks into | Notes |
-|-----------|---------------|--------|
-| `i3`      | `~/.config/i3`, `~/.config/i3status` | Modular i3 config, bar, helper scripts |
-| `vicinae` | `~/.config/vicinae/settings.json` only | Does **not** replace the whole Vicinae directory |
+| Package | Maps to | Notes |
+|---------|---------|--------|
+| `i3` | `~/.config/i3`, `~/.config/i3status` | Modular i3 + spiral (i3-layouts) |
+| `vicinae` | `~/.config/vicinae/settings.json` only | Leaves the rest of `~/.config/vicinae` alone |
+| `zsh` | `~/.zshrc`, `~/.zsh` | Plugins are git submodules |
+| `starship` | `~/.config/starship.toml` | |
+| `ghostty` | `~/.config/ghostty` | |
+| `fonts` | `~/.local/share/fonts`, `~/.config/fontconfig` | JetBrainsMono NF + Plus Jakarta Sans |
+| `git` | `~/.gitconfig` | |
+| `code` | `~/.config/Code/User/…` | settings + keybindings only |
+| `cursor` | `~/.config/Cursor/User/…` | settings + keybindings only |
+| `restore-fedora` | `~/.local/bin/restore-fedora`, `shepherd` | |
+
+## Clone
+
+```bash
+git clone --recurse-submodules <repo-url> ~/i3wm-dotfiles
+cd ~/i3wm-dotfiles
+```
 
 ## Stow
 
 ```bash
-cd ~/i3wm-dotfiles
-stow -v --no-folding i3
-mkdir -p ~/.config/vicinae          # keep a real directory for Vicinae data
-stow -v --no-folding vicinae
+mkdir -p ~/.config/vicinae
+stow -v --no-folding i3 vicinae zsh starship ghostty fonts git code cursor restore-fedora
+fc-cache -fv   # after fonts
 ```
 
-Dry-run: `stow -n -v --no-folding i3 vicinae`
+Dry-run: `stow -n -v --no-folding <pkg>…`  
+Never `stow extra` — it is ignored on purpose.
 
-## Stack
+## Fonts & keys
 
-- **i3** — window manager (modular `config.d/`)
-- **i3-layouts** — spiral tiling (`pip install --user i3-layouts`)
-- **Vicinae** — launcher / clipboard / files / emoji / window switcher (systemd user unit `vicinae.service`)
-- **Ghostty**, **Nautilus**, **Firefox**, **i3status**
+- **JetBrainsMono Nerd Font** — terminal, editors, i3 / i3bar
+- **Plus Jakarta Sans** — default sans (browsers / UI) via fontconfig
+- **Caps Lock → Escape** — `setxkbmap -option caps:escape` (i3 autostart)
 
-Enable Vicinae: `systemctl --user enable --now vicinae.service`
+## Submodules
 
-Validate i3: `i3 -C`
+```bash
+git submodule update --init --recursive
+```
+
+## Notes
+
+- Vicinae: `systemctl --user enable --now vicinae.service`
+- Spiral: `pip install --user i3-layouts`
+- Full package restore: `extra/scripts/restore-fedora.sh` (run deliberately)

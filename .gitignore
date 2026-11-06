@@ -16,7 +16,7 @@ __pycache__/
 .venv/
 venv/
 
-# Local / secrets (keep out of the repo)
+# Local / secrets
 .env
 .env.*
 *.pem
@@ -27,3 +27,17 @@ venv/
 *.orig
 *.rej
 .stow-local-ignore~
+
+# VS Code — only keep User settings/keybindings
+code/.config/Code/*
+!code/.config/Code/User/
+code/.config/Code/User/*
+!code/.config/Code/User/settings.json
+!code/.config/Code/User/keybindings.json
+
+# Cursor IDE — only keep User settings/keybindings
+cursor/.config/Cursor/*
+!cursor/.config/Cursor/User/
+cursor/.config/Cursor/User/*
+!cursor/.config/Cursor/User/settings.json
+!cursor/.config/Cursor/User/keybindings.json

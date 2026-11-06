@@ -4,13 +4,18 @@
 \.gitattributes
 \.gitmodules
 \.github
+\.cursor
 
-# Repo docs / license (stay in the stow directory only)
+# Repo docs / license
 ^/README.*
 ^/LICENSE.*
 ^/COPYING.*
 ^/CHANGELOG.*
 \.md$
+
+# Non-stow tree: restore helpers + theme packs (edit in-repo only)
+^/extra
+^/extra/.*
 
 # Editor / OS junk
 \.DS_Store
@@ -21,7 +26,7 @@
 .*\.swp
 .*\.swo
 
-# Build / cache artifacts if they ever appear inside packages
+# Build / cache inside packages
 __pycache__
 .*\.py[cod]
 \.venv

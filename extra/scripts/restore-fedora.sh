@@ -1,0 +1,135 @@
+#!/bin/bash
+
+DOTFILES_DIR="${DOTFILES_DIR:-$HOME/i3wm-dotfiles}"
+
+echo "Starting Fedora restore..."
+
+run_step() {
+    echo
+    echo "→ $1"
+    bash -c "$2" || echo "Failed: $1"
+}
+
+# ---------------------------------------------
+# System + shell
+# ---------------------------------------------
+run_step "System update" \
+"sudo dnf upgrade -y"
+
+run_step "Install core packages" \
+"sudo dnf install -y git curl stow zsh zoxide fzf eza bat starship golang fd-find ripgrep fontconfig util-linux-user flatpak"
+
+run_step "Set zsh as login shell" \
+"sudo chsh -s \"\$(command -v zsh)\" \"$USER\""
+
+run_step "Install Rust toolchain" \
+"curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
+
+# ---------------------------------------------
+# Terminal + launcher
+# ---------------------------------------------
+run_step "Enable Ghostty COPR" \
+"sudo dnf copr enable -y scottames/ghostty"
+
+run_step "Install Ghostty" \
+"sudo dnf install -y ghostty"
+
+run_step "Enable Vicinae COPR" \
+"sudo dnf copr enable -y quadratech188/vicinae"
+
+run_step "Install Vicinae" \
+"sudo dnf install -y vicinae"
+
+run_step "Enable Vicinae user service" \
+"systemctl --user enable --now vicinae.service"
+
+# ---------------------------------------------
+# Flatpak
+# ---------------------------------------------
+run_step "Enable Flathub" \
+"flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo"
+
+run_step "Install OBS" \
+"flatpak install -y flathub com.obsproject.Studio"
+
+# ---------------------------------------------
+# Editors + browsers
+# ---------------------------------------------
+run_step "Import VS Code GPG key" \
+"sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc"
+
+run_step "Add VS Code repo" \
+"printf '%s\n' \
+'[code]' \
+'name=Visual Studio Code' \
+'baseurl=https://packages.microsoft.com/yumrepos/vscode' \
+'enabled=1' \
+'autorefresh=1' \
+'type=rpm-md' \
+'gpgcheck=1' \
+'gpgkey=https://packages.microsoft.com/keys/microsoft.asc' \
+| sudo tee /etc/yum.repos.d/vscode.repo > /dev/null"
+
+run_step "Install VS Code" \
+"sudo dnf install -y code"
+
+run_step "Install Cursor" \
+"sudo dnf install -y https://api2.cursor.sh/updates/download/golden/linux-x64-rpm/cursor/2.6"
+
+run_step "Install Brave" \
+"curl -fsS https://dl.brave.com/install.sh | sh"
+
+run_step "Enable Helium COPR" \
+"sudo dnf copr enable -y imput/helium"
+
+run_step "Install Helium" \
+"sudo dnf install -y helium-bin"
+
+run_step "Add Charm repo" \
+"printf '%s\n' \
+'[charm]' \
+'name=Charm' \
+'baseurl=https://repo.charm.sh/yum/' \
+'enabled=1' \
+'gpgcheck=1' \
+'gpgkey=https://repo.charm.sh/yum/gpg.key' \
+| sudo tee /etc/yum.repos.d/charm.repo > /dev/null"
+
+run_step "Install Glow" \
+"sudo dnf install -y glow"
+
+run_step "Install Yaak" \
+"sudo dnf install -y https://yaak.app/releases/v2026.7.1/rpm-x86_64/yaak-2026.7.1-1.x86_64.rpm"
+
+# ---------------------------------------------
+# Language toolchains
+# ---------------------------------------------
+run_step "Install Bun" \
+"curl -fsSL https://bun.sh/install | bash"
+
+run_step "Install NVM" \
+"export PROFILE=/dev/null NVM_DIR=\"$HOME/.nvm\" && curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash"
+
+run_step "Install Node.js LTS and Current" \
+"export NVM_DIR=\"$HOME/.nvm\" && . \"\$NVM_DIR/nvm.sh\" && nvm install --lts && nvm install node && nvm alias default 'lts/*'"
+
+run_step "Install pnpm on LTS and Current" \
+"export NVM_DIR=\"$HOME/.nvm\" && . \"\$NVM_DIR/nvm.sh\" && nvm use --lts && corepack enable && corepack prepare pnpm@latest --activate && nvm use node && corepack enable && corepack prepare pnpm@latest --activate && nvm alias default 'lts/*'"
+
+run_step "Install uv" \
+"curl -LsSf https://astral.sh/uv/install.sh | sh"
+
+run_step "Install OpenCode" \
+"curl -fsSL https://opencode.ai/v2/install | bash -s -- --no-modify-path"
+
+# ---------------------------------------------
+# Dotfiles
+# ---------------------------------------------
+run_step "Apply dotfiles via stow" \
+"cd \"$DOTFILES_DIR\" && git submodule update --init --recursive && stow zsh git starship ghostty vicinae code cursor fonts kde restore-fedora"
+
+run_step "Refresh font cache" \
+"fc-cache -fv"
+
+echo
+echo "Restore finished. Open a new terminal (or log out/in) so zsh is the login shell."
