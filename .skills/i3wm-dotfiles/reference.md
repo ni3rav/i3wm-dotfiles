@@ -11,6 +11,7 @@
 | `git` | `~/.gitconfig` | |
 | `code` | Code User settings/keybindings | |
 | `cursor` | Cursor User settings/keybindings | |
+| `xdg` | `~/.config/mimeapps.list` | Text/config → GNOME Text Editor (not OnlyOffice) |
 
 ## i3
 
@@ -32,7 +33,7 @@ PATH only here (no `.zshrc.local`): `~/.local/bin`, cargo, bun, opencode, cursor
 
 ```bash
 mkdir -p ~/.config/vicinae
-stow -v --no-folding i3 vicinae zsh starship ghostty fonts git code cursor
+stow -v --no-folding i3 vicinae zsh starship ghostty fonts git code cursor xdg
 ```
 
 Never stow `extra/`, `.skills/`, `.git`, `.cursor`. Restore: `bash extra/restore-fedora.sh`.

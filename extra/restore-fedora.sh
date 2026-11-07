@@ -98,8 +98,14 @@ step_core_packages() {
     wmctrl xdotool \
     xorg-x11-xkb-utils \
     nautilus \
+    gnome-text-editor \
+    mate-polkit \
     jq \
     openssh-clients
+  sudo dnf remove -y mousepad Thunar tumbler \
+    thunar-volman thunar-archive-plugin thunar-media-tags-plugin \
+    thunar-vcs-plugin gtkhash-thunar \
+    xfce-polkit xfce4-terminal im-chooser-xfce || true
 }
 
 step_starship() {
@@ -317,8 +323,13 @@ step_dotfiles() {
     mv "$HOME/.config/vicinae/settings.json" "$HOME/.config/vicinae/settings.json.pre-restore"
   fi
 
+  if [[ -e "$HOME/.config/mimeapps.list" && ! -L "$HOME/.config/mimeapps.list" ]]; then
+    warn "moving real mimeapps.list aside so stow can link"
+    mv "$HOME/.config/mimeapps.list" "$HOME/.config/mimeapps.list.pre-restore"
+  fi
+
   stow -v --no-folding \
-    i3 vicinae zsh starship ghostty fonts git code cursor
+    i3 vicinae zsh starship ghostty fonts git code cursor xdg
 
   fc-cache -fv
   fc-list : family | grep -qi 'JetBrainsMono' \

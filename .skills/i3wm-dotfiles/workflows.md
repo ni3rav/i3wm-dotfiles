@@ -31,7 +31,7 @@ cd ~/i3wm-dotfiles && stow -v --no-folding vicinae
 ```bash
 bash ~/i3wm-dotfiles/extra/restore-fedora.sh
 cd ~/i3wm-dotfiles
-stow -n -v --no-folding i3 vicinae zsh starship ghostty fonts git code cursor
+stow -n -v --no-folding i3 vicinae zsh starship ghostty fonts git code cursor xdg
 i3 -C -c ~/.config/i3/config
 readlink -f ~/.zshrc
 test ! -e ~/.zshrc.local

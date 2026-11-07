@@ -19,7 +19,7 @@ Repo: `~/i3wm-dotfiles`. Stow maps packages into `$HOME`.
 4. Always `stow -v --no-folding <pkgs…>` from repo root.
 5. Surgical changes only; match existing style.
 
-Packages: `i3` `vicinae` `zsh` `starship` `ghostty` `fonts` `git` `code` `cursor`.
+Packages: `i3` `vicinae` `zsh` `starship` `ghostty` `fonts` `git` `code` `cursor` `xdg`.
 
 See [reference.md](reference.md) and [workflows.md](workflows.md).
 
