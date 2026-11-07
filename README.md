@@ -18,13 +18,14 @@ Home paths are symlinks into this tree — edit here, then commit. Don’t repla
 | `code` | VS Code user settings/keybindings |
 | `cursor` | Cursor user settings/keybindings |
 | `xdg` | `mimeapps.list` (text/config → GNOME Text Editor) |
+| `picom` | `~/.config/picom/picom.conf` |
 
 ```bash
 git clone --recurse-submodules <repo-url> ~/i3wm-dotfiles
 cd ~/i3wm-dotfiles
 git submodule update --init --recursive
 mkdir -p ~/.config/vicinae
-stow -v --no-folding i3 vicinae zsh starship ghostty fonts git code cursor xdg
+stow -v --no-folding i3 vicinae zsh starship ghostty fonts git code cursor xdg picom
 fc-cache -fv
 systemctl --user enable --now vicinae.service
 ```

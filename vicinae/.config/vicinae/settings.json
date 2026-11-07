@@ -31,7 +31,7 @@
 	},
 
 	"launcher_window": {
-		"opacity": 0.92,
+		"opacity": 1,
 		"material": "blur",
 		"blur": {
 			"enabled": true

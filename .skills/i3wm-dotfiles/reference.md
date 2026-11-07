@@ -6,12 +6,13 @@
 | `vicinae` | `settings.json` + `systemd/user/vicinae.service.d/` | Leave other Vicinae state alone |
 | `zsh` | `~/.zshrc`, `~/.zsh` | One `.zshrc`; plugins are submodules |
 | `starship` | `~/.config/starship.toml` | COPR `atim/starship` |
-| `ghostty` | `~/.config/ghostty` | |
+| `ghostty` | `~/.config/ghostty/config.ghostty` | |
 | `fonts` | fonts + fontconfig | JetBrainsMono NF + Plus Jakarta Sans |
 | `git` | `~/.gitconfig` | |
 | `code` | Code User settings/keybindings | |
 | `cursor` | Cursor User settings/keybindings | |
 | `xdg` | `~/.config/mimeapps.list` | Text/config → GNOME Text Editor (not OnlyOffice) |
+| `picom` | `~/.config/picom/picom.conf` | X11 compositor; i3 autostarts `picom --daemon` |
 
 ## i3
 
@@ -33,7 +34,7 @@ PATH only here (no `.zshrc.local`): `~/.local/bin`, cargo, bun, opencode, cursor
 
 ```bash
 mkdir -p ~/.config/vicinae
-stow -v --no-folding i3 vicinae zsh starship ghostty fonts git code cursor xdg
+stow -v --no-folding i3 vicinae zsh starship ghostty fonts git code cursor xdg picom
 ```
 
 Never stow `extra/`, `.skills/`, `.git`, `.cursor`. Restore: `bash extra/restore-fedora.sh`.
