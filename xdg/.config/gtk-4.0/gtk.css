@@ -1,8 +1,18 @@
-/* Applied by apply-look.sh — Tokyo Night dark for libadwaita */
+/* Applied by apply-look.sh — theme + square corners */
 @import url("gtk-dark.css");
 
-/* Square corners */
-* { border-radius: 0; }
-window, window.background, .csd, headerbar, .titlebar, toast, popover,
-popover > contents, menu, .menu, dialog, messagedialog, sheet, .background,
-.card, .osd { border-radius: 0; }
+/* Square corners (beat theme specificity) */
+* { border-radius: 0px; }
+* { border-top-left-radius: 0; border-top-right-radius: 0;
+    border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+window, window.background, .csd, decoration, headerbar, .titlebar, titlebar,
+toast, popover, popover > contents, menu, .menu, .context-menu,
+dialog, messagedialog, sheet, .background, .card, .osd, .frame,
+button, entry, spinbutton, combobox, notebook, notebook > header, notebook tab,
+scrollbar, scrollbar > trough, scrollbar > slider, switch, progressbar,
+progressbar > trough, progressbar > progress, scale, scale > trough, scale > highlight,
+scale > slider, list, listview, gridview, .view, infobar, searchbar, toolbar,
+.sidebar, .navigation-sidebar, calendar, checkbutton check, checkbutton radio,
+radiobutton, .app-notification, tooltip, .tooltip {
+  border-radius: 0;
+}
