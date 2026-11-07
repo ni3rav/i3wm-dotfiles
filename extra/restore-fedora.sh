@@ -104,7 +104,9 @@ step_core_packages() {
     gvfs-mtp gvfs-gphoto2 gvfs-afc gvfs-smb libmtp \
     gnome-text-editor \
     mate-polkit \
-    blueman brightnessctl pavucontrol yad numlockx playerctl xclip \
+    blueman brightnessctl pavucontrol pulseaudio-utils \
+    python3-gobject \
+    yad numlockx playerctl xclip \
     light-locker \
     power-profiles-daemon gnome-control-center gnome-system-monitor \
     jq \
@@ -335,6 +337,7 @@ step_flatpaks() {
   flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
   flatpak install -y flathub com.obsproject.Studio
   flatpak install -y flathub org.onlyoffice.desktopeditors
+  flatpak install flathub net.nokyan.Resources
 }
 
 step_github_cli() {

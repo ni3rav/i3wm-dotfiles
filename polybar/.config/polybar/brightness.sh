@@ -2,8 +2,8 @@
 # Match battery spacing: icon+space in font-2, then percent.
 
 case "${1:-}" in
-  up)   brightnessctl set +5% >/dev/null; exit 0 ;;
-  down) brightnessctl set 5%- >/dev/null; exit 0 ;;
+  up)   ~/.config/i3/osd.sh brightness up; exit 0 ;;
+  down) ~/.config/i3/osd.sh brightness down; exit 0 ;;
 esac
 
 cur=$(brightnessctl g 2>/dev/null) || cur=0

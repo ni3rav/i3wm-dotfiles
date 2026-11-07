@@ -20,6 +20,7 @@
 - `$i3l spiral` stays in main `config` (i3-layouts can't see includes).
 - Gaps + `client.focused` accent `#7aa2f7`. No `bar {}` — Polybar owns the top strip.
 - Tray apps: `nm-applet`, `blueman-applet`.
+- Media OSD: `~/.config/i3/osd.sh` → `osd-hud.py` (brightness + volume). Needs `brightnessctl`, `pactl` (`pulseaudio-utils`), `python3-gobject`, JetBrainsMono NF. Volume may show >100%; bar caps at full.
 
 ## Vicinae
 

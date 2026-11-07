@@ -8,7 +8,7 @@ Home paths are symlinks into this tree — edit here, then commit. Don’t repla
 
 | Package | Maps to |
 |---------|---------|
-| `i3` | `~/.config/i3` (polybar replaces i3bar/i3status) |
+| `i3` | `~/.config/i3` (polybar replaces i3bar/i3status; `osd.sh` brightness/volume HUD) |
 | `vicinae` | `settings.json` + systemd drop-in |
 | `zsh` | `~/.zshrc`, `~/.zsh` |
 | `starship` | `~/.config/starship.toml` |
