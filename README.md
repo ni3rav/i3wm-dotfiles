@@ -23,7 +23,7 @@ Agent skill (user-invoked): `.skills/i3wm-dotfiles/` — invoke when editing pac
 | Package | Maps to | Notes |
 |---------|---------|--------|
 | `i3` | `~/.config/i3`, `~/.config/i3status` | Modular i3 + spiral (i3-layouts) |
-| `vicinae` | `~/.config/vicinae/settings.json` only | Leaves the rest of `~/.config/vicinae` alone |
+| `vicinae` | settings.json + systemd drop-in | Drop-in adds `WantedBy=default.target` |
 | `zsh` | `~/.zshrc`, `~/.zsh` | Plugins are git submodules |
 | `starship` | `~/.config/starship.toml` | |
 | `ghostty` | `~/.config/ghostty` | |
@@ -64,6 +64,6 @@ git submodule update --init --recursive
 
 ## Notes
 
-- Vicinae: `systemctl --user enable --now vicinae.service`
+- Vicinae: stow then `systemctl --user enable --now vicinae.service` (drop-in → `default.target`; do not `disable` stowed unit symlinks)
 - Spiral: `pip install --user i3-layouts`
 - Fresh install: `bash extra/restore-fedora.sh` (edits dnf.conf, installs toolchain, stows)

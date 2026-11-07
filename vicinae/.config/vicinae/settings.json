@@ -6,10 +6,15 @@
 // via deeplinks so they work reliably under X11 + i3. Leaving Vicinae's own
 // toggle at the Linux default (Super+Ctrl+Space) avoids a double-grab on
 // Super+Space.
+//
+// compact_mode stays OFF: on X11 (no layer-shell) it leaves a black empty
+// pane until you type. Built-in blur is Hyprland-oriented; opacity still
+// needs a compositor (e.g. picom) to composite on i3/X11.
 
 {
 	"$schema": "https://vicinae.com/schemas/config.json",
 
+	"pop_to_root_on_close": true,
 	"search_files_in_root": false,
 
 	"favorites": [
@@ -26,14 +31,29 @@
 	"font": {
 		"rendering": "native",
 		"normal": {
-			"family": "JetBrainsMono Nerd Font"
+			"family": "JetBrainsMono Nerd Font",
+			"size": 12
 		}
 	},
 
 	"theme": {
 		"dark": {
-			"name": "vicinae-dark",
+			"name": "tokyo-night",
 			"icon_theme": "auto"
+		}
+	},
+
+	"launcher_window": {
+		"opacity": 0.92,
+		"material": "blur",
+		"blur": {
+			"enabled": true
+		},
+		"client_side_decorations": {
+			"enabled": false
+		},
+		"compact_mode": {
+			"enabled": false
 		}
 	}
 }

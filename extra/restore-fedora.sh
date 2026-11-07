@@ -153,7 +153,7 @@ step_ghostty() {
 step_vicinae() {
   ensure_copr "quadratech188/vicinae"
   sudo dnf install -y vicinae
-  systemctl --user enable --now vicinae.service || true
+  # enable --now happens in step_dotfiles after the stowed drop-in is linked
 }
 
 step_i3_layouts() {
@@ -348,6 +348,16 @@ step_dotfiles() {
   # Enforce single .zshrc SSOT
   [[ -L "$HOME/.zshrc" ]] || { err "~/.zshrc is not a symlink to stowed zsh/.zshrc"; return 1; }
   [[ ! -e "$HOME/.zshrc.local" ]] || { err ".zshrc.local must not exist"; return 1; }
+
+  # Vicinae: stowed drop-in adds WantedBy=default.target (stock unit only
+  # wants graphical-session.target, which never starts under LightDM+i3).
+  # Do not `systemctl disable` here — it can delete stowed unit symlinks.
+  if need_cmd vicinae; then
+    systemctl --user daemon-reload
+    systemctl --user enable --now vicinae.service
+    systemctl --user is-enabled vicinae.service >/dev/null
+    ok "vicinae.service enabled (default.target via drop-in)"
+  fi
 }
 
 main() {

@@ -5,7 +5,7 @@
 | Package | Home targets | Notes |
 |---------|--------------|--------|
 | `i3` | `~/.config/i3`, `~/.config/i3status` | Modular `config` + `config.d/*`; spiral via i3-layouts |
-| `vicinae` | `~/.config/vicinae/settings.json` only | Leave other Vicinae state alone |
+| `vicinae` | `settings.json` + `systemd/user/vicinae.service.d/` | Leave other Vicinae state alone |
 | `zsh` | `~/.zshrc`, `~/.zsh` | Single SSOT `.zshrc`; plugins are submodules |
 | `starship` | `~/.config/starship.toml` | Installed via COPR `atim/starship` |
 | `ghostty` | `~/.config/ghostty` | Font: JetBrainsMono Nerd Font |
@@ -25,10 +25,11 @@
 
 ## Vicinae
 
-- Settings SSOT: `vicinae/.config/vicinae/settings.json`.
-- UI font: `font.normal.family` = `JetBrainsMono Nerd Font`, `rendering` = `native`.
+- Settings SSOT: `vicinae/.config/vicinae/settings.json` only (no custom themes).
+- Theme: built-in `tokyo-night`; font: JetBrainsMono Nerd Font; `compact_mode` **off** (X11 black pane otherwise); CSD off; opacity/blur in `launcher_window` (real blur needs a compositor on i3).
+- i3: `for_window [class="vicinae"]` floats/centers.
 - Global binds live in **i3** via `vicinae://…` deeplinks (X11 reliability), not only Vicinae’s own grabs.
-- Service: `systemctl --user enable --now vicinae.service`.
+- Service: stock unit is `WantedBy=graphical-session.target` (never reached under LightDM+i3 without uwsm). Stowed drop-in `vicinae.service.d/i3-session.conf` adds `WantedBy=default.target`. After stow: `systemctl --user daemon-reload && systemctl --user enable --now vicinae.service`. Never `systemctl disable` a stowed unit symlink (systemd may delete it).
 
 ## Fonts / fontconfig
 
