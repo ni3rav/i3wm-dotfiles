@@ -9,6 +9,7 @@ export PATH="$HOME/.cursor/bin:$PATH"
 [[ -f "$HOME/.cargo/env" ]] && source "$HOME/.cargo/env"
 
 export EDITOR="vi"
+export TERMINAL="ghostty"
 
 export HISTFILE="$HOME/.zsh_history"
 export HISTSIZE=100000

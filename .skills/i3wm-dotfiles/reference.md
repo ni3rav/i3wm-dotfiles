@@ -2,7 +2,7 @@
 
 | Package | Home targets | Notes |
 |---------|--------------|--------|
-| `i3` | `~/.config/i3`, `~/.config/i3status` | `config` + `config.d/*`; spiral via i3-layouts |
+| `i3` | `~/.config/i3`, `~/.config/i3status` | gaps + Tokyo Night focus border; polybar replaces i3bar |
 | `vicinae` | `settings.json` + `systemd/user/vicinae.service.d/` | Leave other Vicinae state alone |
 | `zsh` | `~/.zshrc`, `~/.zsh` | One `.zshrc`; plugins are submodules |
 | `starship` | `~/.config/starship.toml` | COPR `atim/starship` |
@@ -11,30 +11,26 @@
 | `git` | `~/.gitconfig` | |
 | `code` | Code User settings/keybindings | |
 | `cursor` | Cursor User settings/keybindings | |
-| `xdg` | `~/.config/mimeapps.list` | Text/config → GNOME Text Editor (not OnlyOffice) |
-| `picom` | `~/.config/picom/picom.conf` | X11 compositor; i3 autostarts `picom --daemon` |
+| `xdg` | `~/.config/mimeapps.list` | Text/config → GNOME Text Editor |
+| `picom` | `~/.config/picom/picom.conf` | X11 compositor |
+| `polybar` | `~/.config/polybar/` | Top bar + tray; `launch.sh` from i3 `exec_always` |
 
 ## i3
 
-- Includes: `config.d/*.conf`; `$i3l spiral` stays in main `config` (i3-layouts can't see includes).
-- Font: JetBrainsMono Nerd Font. Caps→Esc on autostart.
-- Vicinae: deeplinks in keybindings; `for_window [class="vicinae"]` floats/centers.
+- `$i3l spiral` stays in main `config` (i3-layouts can't see includes).
+- Gaps + `client.focused` accent `#7aa2f7`. No `bar {}` — Polybar owns the top strip.
+- Tray apps: `nm-applet`, `blueman-applet`.
 
 ## Vicinae
 
-- SSOT: `settings.json` only. Theme `tokyo-night`, JetBrainsMono, CSD off, `compact_mode` off.
-- Drop-in sets `WantedBy=default.target` (stock `graphical-session.target` never starts under LightDM+i3).
-- After stow: `systemctl --user daemon-reload && systemctl --user enable --now vicinae.service`. Don't `systemctl disable` a stowed unit symlink.
-
-## zsh/.zshrc
-
-PATH only here (no `.zshrc.local`): `~/.local/bin`, cargo, bun, opencode, cursor, nvm default node, pnpm. Then history/zoxide/aliases, lazy nvm, starship, plugins via `zvm_after_init_commands`.
+- SSOT: `settings.json`. Theme `tokyo-night`, JetBrainsMono, CSD off, `compact_mode` off.
+- Drop-in `WantedBy=default.target`. After stow: `systemctl --user enable --now vicinae.service`.
 
 ## Stow
 
 ```bash
 mkdir -p ~/.config/vicinae
-stow -v --no-folding i3 vicinae zsh starship ghostty fonts git code cursor xdg picom
+stow -v --no-folding i3 vicinae zsh starship ghostty fonts git code cursor xdg picom polybar
 ```
 
 Never stow `extra/`, `.skills/`, `.git`, `.cursor`. Restore: `bash extra/restore-fedora.sh`.

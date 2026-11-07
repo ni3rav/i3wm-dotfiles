@@ -93,13 +93,15 @@ step_core_packages() {
     git curl wget stow zsh zoxide fzf eza bat gh \
     golang fd-find ripgrep fontconfig util-linux-user flatpak \
     python3-pip \
-    i3 i3status i3lock xss-lock dmenu picom \
+    i3 i3status i3lock xss-lock dmenu picom polybar \
     nm-connection-editor dex-autostart \
     wmctrl xdotool \
     xorg-x11-xkb-utils \
     nautilus \
     gnome-text-editor \
     mate-polkit \
+    blueman brightnessctl pavucontrol yad numlockx \
+    power-profiles-daemon gnome-control-center gnome-system-monitor \
     jq \
     openssh-clients
   sudo dnf remove -y mousepad Thunar tumbler \
@@ -329,7 +331,7 @@ step_dotfiles() {
   fi
 
   stow -v --no-folding \
-    i3 vicinae zsh starship ghostty fonts git code cursor xdg picom
+    i3 vicinae zsh starship ghostty fonts git code cursor xdg picom polybar
 
   fc-cache -fv
   fc-list : family | grep -qi 'JetBrainsMono' \
