@@ -1,20 +1,16 @@
 {
 	"$schema": "https://vicinae.com/schemas/config.json",
-
 	"pop_to_root_on_close": true,
 	"search_files_in_root": false,
-
 	"favorites": [
 		"clipboard:history",
 		"files:search",
 		"core:search-emojis",
 		"wm:switch-windows"
 	],
-
 	"fallbacks": [
 		"files:search"
 	],
-
 	"font": {
 		"rendering": "native",
 		"normal": {
@@ -22,16 +18,18 @@
 			"size": 12
 		}
 	},
-
 	"theme": {
 		"dark": {
 			"name": "tokyo-night",
-			"icon_theme": "auto"
+			"icon_theme": "Tela-circle-dark"
+		},
+		"light": {
+			"name": "vicinae-light",
+			"icon_theme": "Tela-circle-dark"
 		}
 	},
-
 	"launcher_window": {
-		"opacity": 1,
+		"opacity": 0.9,
 		"material": "blur",
 		"blur": {
 			"enabled": true

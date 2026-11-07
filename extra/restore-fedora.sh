@@ -93,7 +93,7 @@ step_core_packages() {
     git curl wget stow zsh zoxide fzf eza bat gh \
     golang fd-find ripgrep fontconfig util-linux-user flatpak \
     python3-pip \
-    i3 i3status i3lock xss-lock dmenu picom polybar \
+    i3 i3status xss-lock dmenu picom polybar feh \
     nm-connection-editor dex-autostart \
     wmctrl xdotool \
     xorg-x11-xkb-utils \
@@ -102,6 +102,7 @@ step_core_packages() {
     gnome-text-editor \
     mate-polkit \
     blueman brightnessctl pavucontrol yad numlockx playerctl xclip \
+    light-locker \
     power-profiles-daemon gnome-control-center gnome-system-monitor \
     jq \
     openssh-clients

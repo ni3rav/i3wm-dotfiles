@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Screen Locker
+Comment=LightDM-integrated locker with greeter password field
+Exec=light-locker --lock-after-screensaver=0 --lock-on-lid --lock-on-suspend
+OnlyShowIn=i3;
+X-GNOME-Autostart-Phase=Application
+NoDisplay=true

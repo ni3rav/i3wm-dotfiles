@@ -10,6 +10,8 @@ export PATH="$HOME/.cursor/bin:$PATH"
 
 export EDITOR="vi"
 export TERMINAL="ghostty"
+export GTK_THEME="${GTK_THEME:-Tokyonight-BL-LB-Dark}"
+export GTK2_RC_FILES="${GTK2_RC_FILES:-$HOME/.gtkrc-2.0}"
 
 export HISTFILE="$HOME/.zsh_history"
 export HISTSIZE=100000
