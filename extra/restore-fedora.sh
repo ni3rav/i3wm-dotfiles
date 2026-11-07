@@ -98,9 +98,10 @@ step_core_packages() {
     wmctrl xdotool \
     xorg-x11-xkb-utils \
     nautilus \
+    gvfs-mtp gvfs-gphoto2 gvfs-afc gvfs-smb libmtp \
     gnome-text-editor \
     mate-polkit \
-    blueman brightnessctl pavucontrol yad numlockx playerctl \
+    blueman brightnessctl pavucontrol yad numlockx playerctl xclip \
     power-profiles-daemon gnome-control-center gnome-system-monitor \
     jq \
     openssh-clients
