@@ -1,7 +1,6 @@
 autoload -Uz compinit
 compinit
 
-# --- PATH (single source of truth) ----------------------------------------
 export PATH="$HOME/.local/bin:$PATH"
 export PATH="$HOME/.cargo/bin:$PATH"
 export PATH="$HOME/.bun/bin:$PATH"
@@ -11,7 +10,6 @@ export PATH="$HOME/.cursor/bin:$PATH"
 
 export EDITOR="vi"
 
-# History
 export HISTFILE="$HOME/.zsh_history"
 export HISTSIZE=100000
 export SAVEHIST=100000
@@ -34,7 +32,6 @@ alias glo="git log --oneline --graph"
 alias vpnc="protonvpn connect"
 alias vpnd="protonvpn disconnect"
 
-# --- Node (nvm: lazy-load; default node bin on PATH) ----------------------
 export NVM_DIR="$HOME/.nvm"
 
 _nvm_default_bin() {
@@ -72,24 +69,20 @@ nvm() {
   nvm "$@"
 }
 
-# --- Bun ------------------------------------------------------------------
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
 [[ -s "$HOME/.bun/_bun" ]] && source "$HOME/.bun/_bun"
 
-# --- pnpm -----------------------------------------------------------------
 export PNPM_HOME="$HOME/.local/share/pnpm"
 case ":$PATH:" in
   *":$PNPM_HOME/bin:"*) ;;
   *) export PATH="$PNPM_HOME/bin:$PATH" ;;
 esac
 
-# --- Prompt ---------------------------------------------------------------
 eval "$(starship init zsh)"
 
-# --- Plugins (submodules under ~/.zsh/plugins) ----------------------------
 source ~/.zsh/plugins/zsh-vi-mode/zsh-vi-mode.plugin.zsh
-# add-zle-hook-widget before zvm_init makes zsh 5.9 SIGSEGV in `$(zle -l)`.
+# add-zle-hook-widget before zvm_init SIGSEGVs zsh 5.9
 zvm_after_init_commands+=(
   'source ~/.zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh'
   'source ~/.zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh'

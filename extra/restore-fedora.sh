@@ -1,10 +1,6 @@
 #!/usr/bin/env bash
-# Fresh Fedora + i3wm restore for ~/i3wm-dotfiles
-# PATH for interactive shells lives only in the stowed ~/.zshrc (single source of truth).
-# This script only refreshes PATH for the *current install session*.
-#
-# Usage:
-#   bash ~/i3wm-dotfiles/extra/restore-fedora.sh
+# bash ~/i3wm-dotfiles/extra/restore-fedora.sh
+# Interactive PATH lives only in stowed zsh/.zshrc.
 
 set -u
 set -o pipefail
@@ -35,7 +31,6 @@ refresh_path() {
   fi
 }
 
-# Installers sometimes append to ~/.zshrc — restore our tracked file afterward.
 guard_zshrc() {
   if [[ -f "$ZSHRC_TRACKED" ]]; then
     cp -a "$ZSHRC_TRACKED" /tmp/i3wm-zshrc.guard
@@ -44,12 +39,10 @@ guard_zshrc() {
 
 restore_zshrc_if_clobbered() {
   [[ -f /tmp/i3wm-zshrc.guard ]] || return 0
-  # Writes through a symlink mutate the repo file — restore tracked content.
   if ! cmp -s /tmp/i3wm-zshrc.guard "$ZSHRC_TRACKED" 2>/dev/null; then
     warn "restoring tracked zsh/.zshrc after installer modified it"
     cp -a /tmp/i3wm-zshrc.guard "$ZSHRC_TRACKED"
   fi
-  # Some installers replace the symlink with a real file — drop it for stow.
   if [[ -e "$HOME/.zshrc" && ! -L "$HOME/.zshrc" ]]; then
     warn "installer replaced ~/.zshrc symlink; removing so stow can relink"
     mv "$HOME/.zshrc" "$HOME/.zshrc.installer-clobber"
@@ -84,8 +77,6 @@ ensure_copr() {
 
 configure_dnf() {
   sudo tee /etc/dnf/dnf.conf >/dev/null <<'EOF'
-# see `man dnf.conf` for defaults and possible options
-
 [main]
 max_parallel_downloads=10
 fastestmirror=True
@@ -98,7 +89,6 @@ step_dnf_config() { configure_dnf; }
 step_dnf_upgrade() { sudo dnf upgrade -y; }
 
 step_core_packages() {
-  # Fedora 45+: nm-connection-editor replaces NetworkManager-gnome; dex is dex-autostart
   sudo dnf install -y \
     git curl wget stow zsh zoxide fzf eza bat gh \
     golang fd-find ripgrep fontconfig util-linux-user flatpak \
@@ -153,7 +143,6 @@ step_ghostty() {
 step_vicinae() {
   ensure_copr "quadratech188/vicinae"
   sudo dnf install -y vicinae
-  # enable --now happens in step_dotfiles after the stowed drop-in is linked
 }
 
 step_i3_layouts() {
@@ -204,12 +193,10 @@ step_nvm_node_pnpm() {
     ok "nvm already present"
   fi
   restore_zshrc_if_clobbered
-  # nvm.sh trips over nounset (PROVIDED_VERSION); relax for this step only
   set +u
   # shellcheck disable=SC1090
   source "${NVM_DIR}/nvm.sh"
   nvm install --lts
-  # Install "current" when stable; drop prereleases
   nvm install node || true
   local node_ver
   node_ver=$(nvm version node 2>/dev/null || echo "")
@@ -222,8 +209,6 @@ step_nvm_node_pnpm() {
   nvm use default
   set -u
 
-  # Node 26+ may ship without corepack in PATH — install pnpm directly.
-  # Installer appends to ~/.zshrc; guard + restore keeps our single SSOT.
   export PNPM_HOME="${HOME}/.local/share/pnpm"
   export PATH="${PNPM_HOME}/bin:${PATH}"
   if need_cmd pnpm; then
@@ -232,7 +217,6 @@ step_nvm_node_pnpm() {
     guard_zshrc
     curl -fsSL https://get.pnpm.io/install.sh | SHELL=zsh PNPM_HOME="$PNPM_HOME" bash -
     restore_zshrc_if_clobbered
-    # pnpm may replace a symlink ~/.zshrc with a real file — force stow shape
     if [[ -e "$HOME/.zshrc" && ! -L "$HOME/.zshrc" ]]; then
       warn "pnpm replaced ~/.zshrc symlink; restoring stow link"
       rm -f "$HOME/.zshrc"
@@ -293,7 +277,6 @@ step_cursor_cli() {
   curl -fsS https://cursor.com/install | bash
   restore_zshrc_if_clobbered
   refresh_path
-  # Official installer ships `agent` / `cursor-agent` (not always `cursor`)
   if need_cmd agent || need_cmd cursor-agent || need_cmd cursor; then
     need_cmd agent && agent --version 2>/dev/null || true
     need_cmd cursor-agent && ok "cursor-agent present" || true
@@ -322,7 +305,6 @@ step_dotfiles() {
   git submodule update --init --recursive
   mkdir -p "$HOME/.config/vicinae"
 
-  # Remove leftover local override — PATH belongs only in stowed .zshrc
   rm -f "$HOME/.zshrc.local"
 
   if [[ -e "$HOME/.zshrc" && ! -L "$HOME/.zshrc" ]]; then
@@ -330,7 +312,6 @@ step_dotfiles() {
     mv "$HOME/.zshrc" "$HOME/.zshrc.pre-restore"
   fi
 
-  # Vicinae may rewrite settings.json as a real file; prefer stowed SSOT
   if [[ -e "$HOME/.config/vicinae/settings.json" && ! -L "$HOME/.config/vicinae/settings.json" ]]; then
     warn "moving real vicinae settings.json aside so stow can link"
     mv "$HOME/.config/vicinae/settings.json" "$HOME/.config/vicinae/settings.json.pre-restore"
@@ -339,24 +320,19 @@ step_dotfiles() {
   stow -v --no-folding \
     i3 vicinae zsh starship ghostty fonts git code cursor
 
-  # JetBrainsMono NF + Plus Jakarta Sans (fontconfig prefers them)
   fc-cache -fv
   fc-list : family | grep -qi 'JetBrainsMono' \
     || { err "JetBrainsMono Nerd Font not visible to fontconfig"; return 1; }
   ok "fonts: JetBrainsMono Nerd Font available"
 
-  # Enforce single .zshrc SSOT
   [[ -L "$HOME/.zshrc" ]] || { err "~/.zshrc is not a symlink to stowed zsh/.zshrc"; return 1; }
   [[ ! -e "$HOME/.zshrc.local" ]] || { err ".zshrc.local must not exist"; return 1; }
 
-  # Vicinae: stowed drop-in adds WantedBy=default.target (stock unit only
-  # wants graphical-session.target, which never starts under LightDM+i3).
-  # Do not `systemctl disable` here — it can delete stowed unit symlinks.
   if need_cmd vicinae; then
     systemctl --user daemon-reload
     systemctl --user enable --now vicinae.service
     systemctl --user is-enabled vicinae.service >/dev/null
-    ok "vicinae.service enabled (default.target via drop-in)"
+    ok "vicinae.service enabled"
   fi
 }
 
@@ -402,7 +378,6 @@ main() {
   printf 'Open a new terminal (or log out/in) so zsh + PATH are active.\n'
   printf 'Single shell config: stowed ~/.zshrc only (no .zshrc.local).\n'
 
-  # Only after a fully successful run — interactive; skip if already logged in
   if need_cmd gh; then
     if gh auth status -h github.com >/dev/null 2>&1; then
       ok "gh already logged in"

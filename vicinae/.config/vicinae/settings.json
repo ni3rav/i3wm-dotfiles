@@ -1,16 +1,3 @@
-// Managed by GNU Stow (package: vicinae). Only this file is symlinked.
-// Merged with defaults from `vicinae config default`.
-// Docs: https://docs.vicinae.com/config
-//
-// Global Super+Space / Super+V / Super+E / Super+, / Alt+Tab are bound in i3
-// via deeplinks so they work reliably under X11 + i3. Leaving Vicinae's own
-// toggle at the Linux default (Super+Ctrl+Space) avoids a double-grab on
-// Super+Space.
-//
-// compact_mode stays OFF: on X11 (no layer-shell) it leaves a black empty
-// pane until you type. Built-in blur is Hyprland-oriented; opacity still
-// needs a compositor (e.g. picom) to composite on i3/X11.
-
 {
 	"$schema": "https://vicinae.com/schemas/config.json",
 

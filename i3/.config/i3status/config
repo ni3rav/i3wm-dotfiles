@@ -1,6 +1,3 @@
-# i3status — compact dark-friendly status line (battery, network, audio, clock)
-# See: man i3status
-
 general {
         colors = true
         interval = 5
