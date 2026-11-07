@@ -43,6 +43,7 @@ case "${1:-}" in
   volume) exec pavucontrol ;;
   network) exec nm-connection-editor ;;
   bluetooth) exec blueman-manager ;;
+  media) exec ~/.config/polybar/media-panel.sh ;;
   battery|power) exec gnome-control-center power ;;
   display) brightness_panel ;;
   monitor) exec gnome-system-monitor ;;

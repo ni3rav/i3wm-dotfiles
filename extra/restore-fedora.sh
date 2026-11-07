@@ -100,7 +100,7 @@ step_core_packages() {
     nautilus \
     gnome-text-editor \
     mate-polkit \
-    blueman brightnessctl pavucontrol yad numlockx \
+    blueman brightnessctl pavucontrol yad numlockx playerctl \
     power-profiles-daemon gnome-control-center gnome-system-monitor \
     jq \
     openssh-clients
