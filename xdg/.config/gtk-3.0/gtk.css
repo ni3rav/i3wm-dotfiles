@@ -1,23 +1,8 @@
-/* Square corners — override theme/lib rounding */
-* {
-  border-radius: 0;
-}
+/* Applied by apply-look.sh — Tokyo Night dark for libadwaita */
+@import url("gtk-dark.css");
 
-decoration,
-decoration:backdrop,
-window,
-window.background,
-.csd,
-.ssd,
-headerbar,
-.titlebar,
-notebook,
-popover,
-menu,
-.menu,
-menuitem,
-dialog,
-messagedialog,
-.background {
-  border-radius: 0;
-}
+/* Square corners */
+* { border-radius: 0; }
+window, window.background, .csd, headerbar, .titlebar, toast, popover,
+popover > contents, menu, .menu, dialog, messagedialog, sheet, .background,
+.card, .osd { border-radius: 0; }

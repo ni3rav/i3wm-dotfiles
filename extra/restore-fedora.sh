@@ -93,7 +93,7 @@ step_core_packages() {
     git curl wget stow zsh zoxide fzf eza bat gh \
     golang fd-find ripgrep fontconfig util-linux-user flatpak \
     python3-pip \
-    i3 i3status xss-lock dmenu picom polybar feh \
+    i3 i3status xss-lock dmenu picom polybar dunst feh \
     nm-connection-editor dex-autostart \
     wmctrl xdotool \
     xorg-x11-xkb-utils \
@@ -333,7 +333,7 @@ step_dotfiles() {
   fi
 
   stow -v --no-folding \
-    i3 vicinae zsh starship ghostty fonts git code cursor xdg picom polybar
+    i3 vicinae zsh starship ghostty fonts git code cursor xdg picom polybar dunst
 
   fc-cache -fv
   fc-list : family | grep -qi 'JetBrainsMono' \

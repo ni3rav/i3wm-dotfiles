@@ -10,8 +10,8 @@ export PATH="$HOME/.cursor/bin:$PATH"
 
 export EDITOR="vi"
 export TERMINAL="ghostty"
-export GTK_THEME="${GTK_THEME:-Tokyonight-BL-LB-Dark}"
-export GTK2_RC_FILES="${GTK2_RC_FILES:-$HOME/.gtkrc-2.0}"
+# Look comes from apply-look.sh (look.env) — no hardcoded theme name here
+[[ -f "$HOME/.config/i3/look.env" ]] && set -a && . "$HOME/.config/i3/look.env" && set +a
 
 export HISTFILE="$HOME/.zsh_history"
 export HISTSIZE=100000

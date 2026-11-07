@@ -1,35 +1,8 @@
-/* Square corners — GTK4 / libadwaita */
-* {
-  border-radius: 0;
-}
+/* Applied by apply-look.sh — Tokyo Night dark for libadwaita */
+@import url("gtk-dark.css");
 
-window,
-window.background,
-.csd,
-headerbar,
-.titlebar,
-toast,
-popover,
-popover > contents,
-popover > arrow,
-menu,
-.menu,
-menuitem,
-dialog,
-messagedialog,
-sheet,
-.background,
-.card,
-.osd,
-banner,
-tabbar,
-tabbox,
-tabview,
-viewswitcher,
-viewswitchertitle {
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
-  border-radius: 0;
-}
+/* Square corners */
+* { border-radius: 0; }
+window, window.background, .csd, headerbar, .titlebar, toast, popover,
+popover > contents, menu, .menu, dialog, messagedialog, sheet, .background,
+.card, .osd { border-radius: 0; }

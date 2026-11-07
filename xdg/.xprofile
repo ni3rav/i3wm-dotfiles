@@ -1,0 +1,2 @@
+# Sourced by LightDM / Xsession before i3 — so GTK apps inherit look.env
+[ -f "$HOME/.config/i3/look.env" ] && set -a && . "$HOME/.config/i3/look.env" && set +a
