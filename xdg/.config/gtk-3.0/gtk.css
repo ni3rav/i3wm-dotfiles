@@ -1,0 +1,23 @@
+/* Square corners — override theme/lib rounding */
+* {
+  border-radius: 0;
+}
+
+decoration,
+decoration:backdrop,
+window,
+window.background,
+.csd,
+.ssd,
+headerbar,
+.titlebar,
+notebook,
+popover,
+menu,
+.menu,
+menuitem,
+dialog,
+messagedialog,
+.background {
+  border-radius: 0;
+}

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Icon + percent for polybar; mute state only for display (click opens mixer).
+# Match battery spacing: icon+space in font-2, then percent.
 
 case "${1:-}" in
   up)   pactl set-sink-volume @DEFAULT_SINK@ +5%; exit 0 ;;
@@ -12,15 +12,8 @@ vol=$(pactl get-sink-volume @DEFAULT_SINK@ 2>/dev/null | awk -F'/' 'NR==1{gsub(/
 vol=${vol:-0}
 
 if [[ "$muted" == "yes" ]]; then
-  printf '%%{T2}󰝟%%{T-} muted\n'
-  exit 0
-fi
-
-if (( vol <= 30 )); then
-  icon="󰕿"
-elif (( vol <= 70 )); then
-  icon="󰖀"
+  icon="󰝟"
 else
   icon="󰕾"
 fi
-printf '%%{T2}%s%%{T-} %s%%\n' "$icon" "$vol"
+printf '%%{T2}%s %%{T-}%s%%\n' "$icon" "$vol"
