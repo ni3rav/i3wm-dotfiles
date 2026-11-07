@@ -154,14 +154,24 @@ Comment=Default cursor theme
 Inherits=$CURSOR_THEME
 EOF
 
-# Expose active icon theme to GTK2 paths (name from look.conf only)
+# Expose icon theme(s) to GTK2 paths. Tela-*-dark symlinks into the base pack
+# (../Tela-circle/{32,scalable}), so the base must sit beside it.
 mkdir -p "$HOME/.local/share/icons" "$HOME/.icons"
-for name in "$ICON_THEME"; do
+icon_names=("$ICON_THEME")
+case "$ICON_THEME" in
+  *-dark) icon_names+=("${ICON_THEME%-dark}") ;;
+  *-light) icon_names+=("${ICON_THEME%-light}") ;;
+esac
+for name in "${icon_names[@]}"; do
   src=""
   [[ -d "$HOME/.local/share/icons/$name" ]] && src="$HOME/.local/share/icons/$name"
   [[ -z "$src" && -d "/usr/share/icons/$name" ]] && src="/usr/share/icons/$name"
-  [[ -n "$src" ]] || continue
+  [[ -n "$src" ]] || {
+    echo "warn: icon theme missing: $name (needed for $ICON_THEME)" >&2
+    continue
+  }
   ln -sfn "$src" "$HOME/.icons/$name"
+  command -v gtk-update-icon-cache >/dev/null && gtk-update-icon-cache -f "$src" 2>/dev/null || true
 done
 
 if command -v gsettings >/dev/null; then

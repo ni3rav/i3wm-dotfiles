@@ -2,7 +2,7 @@
 
 | Package | Home targets | Notes |
 |---------|--------------|--------|
-| `i3` | `~/.config/i3`, `~/.config/i3status` | gaps + Tokyo Night focus border; polybar replaces i3bar |
+| `i3` | `~/.config/i3` | polybar replaces i3bar/i3status; lock via light-locker |
 | `vicinae` | `settings.json` + `systemd/user/vicinae.service.d/` | Leave other Vicinae state alone |
 | `zsh` | `~/.zshrc`, `~/.zsh` | One `.zshrc`; plugins are submodules |
 | `starship` | `~/.config/starship.toml` | COPR `atim/starship` |

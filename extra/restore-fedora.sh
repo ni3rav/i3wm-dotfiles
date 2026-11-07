@@ -89,14 +89,17 @@ step_dnf_config() { configure_dnf; }
 step_dnf_upgrade() { sudo dnf upgrade -y; }
 
 step_core_packages() {
-  sudo dnf install -y \
+  # i3 needs a config Provides; use upstream i3-config (not fedora — that pulls xss-lock/i3status).
+  sudo dnf install -y --setopt=install_weak_deps=False \
     git curl wget stow zsh zoxide fzf eza bat gh \
     golang fd-find ripgrep fontconfig util-linux-user flatpak \
     python3-pip \
-    i3 i3status xss-lock dmenu picom polybar dunst feh flameshot \
+    i3 i3-config xdg-user-dirs dmenu picom polybar dunst feh flameshot \
     nm-connection-editor dex-autostart \
-    wmctrl xdotool \
+    wmctrl xdotool xrandr \
     xorg-x11-xkb-utils \
+
+
     nautilus \
     gvfs-mtp gvfs-gphoto2 gvfs-afc gvfs-smb libmtp \
     gnome-text-editor \
@@ -106,10 +109,41 @@ step_core_packages() {
     power-profiles-daemon gnome-control-center gnome-system-monitor \
     jq \
     openssh-clients
-  sudo dnf remove -y mousepad Thunar tumbler \
+  step_purge_stale
+}
+
+# Drop stock XFCE/i3status/azote leftovers; keep i3 via i3-config (stowed config wins).
+step_purge_stale() {
+  sudo dnf remove -y --setopt=install_weak_deps=False \
+    i3-config-fedora i3status i3status-config xss-lock \
+    azote maim \
+    mousepad Thunar tumbler \
     thunar-volman thunar-archive-plugin thunar-media-tags-plugin \
     thunar-vcs-plugin gtkhash-thunar \
-    xfce-polkit xfce4-terminal im-chooser-xfce || true
+    xfce-polkit xfce4-terminal im-chooser-xfce \
+    2>/dev/null || true
+
+  # Ensure i3 still has a config Provides after fedora package removal
+  if ! rpm -q i3-config >/dev/null 2>&1 && ! rpm -q i3-config-fedora >/dev/null 2>&1; then
+    sudo dnf install -y --setopt=install_weak_deps=False i3-config || true
+  fi
+
+  # Stale home configs from removed apps (never stowed)
+  local stale=(
+    "$HOME/.config/azote"
+    "$HOME/.local/share/azote"
+    "$HOME/.config/Thunar"
+    "$HOME/.config/Mousepad"
+    "$HOME/.config/xfce4"
+    "$HOME/.config/i3status"
+  )
+  local p
+  for p in "${stale[@]}"; do
+    if [[ -e "$p" || -L "$p" ]]; then
+      rm -rf "$p"
+      ok "removed stale $p"
+    fi
+  done
 }
 
 step_starship() {
