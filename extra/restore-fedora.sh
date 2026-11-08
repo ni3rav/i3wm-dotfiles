@@ -106,6 +106,7 @@ step_core_packages() {
     mate-polkit \
     blueman brightnessctl pavucontrol pulseaudio-utils \
     python3-gobject \
+    qrencode redshift \
     yad numlockx playerctl xclip \
     light-locker \
     power-profiles-daemon gnome-control-center gnome-system-monitor \
