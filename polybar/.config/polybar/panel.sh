@@ -1,6 +1,17 @@
 #!/usr/bin/env bash
-# Compact floating control panels. WiFi/BT/brightness/volume/performance → look-applet.
+# Compact floating control panels → look-applet.
 set -euo pipefail
+
+# Polybar click env is PATH-thin; inherit look.env + POSIX default PATH
+if [[ -f "${XDG_CONFIG_HOME:-$HOME/.config}/i3/look.env" ]]; then
+  set -a
+  # shellcheck disable=SC1091
+  source "${XDG_CONFIG_HOME:-$HOME/.config}/i3/look.env"
+  set +a
+fi
+_std=$(getconf PATH 2>/dev/null || true)
+[[ -n "$_std" ]] && export PATH="${PATH:+$PATH:}$_std"
+unset _std
 
 APPLET=(python3 "$HOME/.config/i3/applets/look-applet.py")
 
@@ -13,6 +24,5 @@ case "${1:-}" in
   media) exec ~/.config/polybar/media-panel.sh ;;
   battery|power) exec gnome-control-center power ;;
   monitor) exec gnome-system-monitor ;;
-  settings) exec gnome-control-center ;;
   *) exit 1 ;;
 esac

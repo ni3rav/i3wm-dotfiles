@@ -110,6 +110,8 @@ step_core_packages() {
     yad numlockx playerctl xclip \
     light-locker \
     power-profiles-daemon gnome-control-center gnome-system-monitor \
+    gnome-clocks snapshot \
+    xdg-desktop-portal xdg-desktop-portal-gtk \
     jq \
     openssh-clients
   step_purge_stale
@@ -338,7 +340,7 @@ step_flatpaks() {
   flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
   flatpak install -y flathub com.obsproject.Studio
   flatpak install -y flathub org.onlyoffice.desktopeditors
-  flatpak install flathub net.nokyan.Resources
+  flatpak install -y flathub net.nokyan.Resources
 }
 
 step_github_cli() {
@@ -370,8 +372,19 @@ step_dotfiles() {
     mv "$HOME/.config/mimeapps.list" "$HOME/.config/mimeapps.list.pre-restore"
   fi
 
+  # apply-look writes real gtk settings for Flatpak; clear so stow can own the package
+  for f in \
+    "$HOME/.config/gtk-3.0/gtk.css" "$HOME/.config/gtk-3.0/settings.ini" \
+    "$HOME/.config/gtk-4.0/gtk.css" "$HOME/.config/gtk-4.0/settings.ini"
+  do
+    [[ -e "$f" && ! -L "$f" ]] && rm -f "$f"
+  done
+
   stow -v --no-folding \
     i3 vicinae zsh starship ghostty fonts git code cursor xdg picom polybar dunst flameshot
+
+  systemctl --user daemon-reload 2>/dev/null || true
+  systemctl --user start xdg-desktop-portal.service xdg-desktop-portal-gtk.service 2>/dev/null || true
 
   fc-cache -fv
   fc-list : family | grep -qi 'JetBrainsMono' \
@@ -412,7 +425,7 @@ main() {
   run_step "Install OpenCode" step_opencode
   run_step "Install VS Code" step_vscode
   run_step "Install Cursor CLI" step_cursor_cli
-  run_step "Install Flatpak apps (OBS, OnlyOffice)" step_flatpaks
+  run_step "Install Flatpak apps (OBS, OnlyOffice, Resources)" step_flatpaks
   run_step "Install GitHub CLI" step_github_cli
   run_step "Submodules + stow packages + fc-cache" step_dotfiles
 

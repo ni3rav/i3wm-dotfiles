@@ -31,8 +31,11 @@ cd ~/i3wm-dotfiles && stow -v --no-folding vicinae
 ```bash
 bash ~/i3wm-dotfiles/extra/restore-fedora.sh
 cd ~/i3wm-dotfiles
-stow -n -v --no-folding i3 vicinae zsh starship ghostty fonts git code cursor xdg picom polybar
+stow -n -v --no-folding i3 vicinae zsh starship ghostty fonts git code cursor xdg picom polybar dunst flameshot
 i3 -C -c ~/.config/i3/config
 readlink -f ~/.zshrc
 test ! -e ~/.zshrc.local
+# optional: bar applets / OSD
+python3 -m py_compile ~/.config/i3/applets/look-applet.py ~/.config/i3/osd-hud.py
 ```
+

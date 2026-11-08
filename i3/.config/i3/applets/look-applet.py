@@ -16,6 +16,10 @@ gi.require_version("Gtk", "3.0")
 gi.require_version("Gdk", "3.0")
 from gi.repository import Gdk, GLib, Gtk  # noqa: E402
 
+# Must run before windows map or i3 rules won't match (class becomes Look-applet.py)
+GLib.set_prgname("look-applet")
+Gdk.set_program_class("look-applet")
+
 WIDTH = 340
 HEIGHT_TALL = 420
 HEIGHT_COMPACT = 220
@@ -403,10 +407,12 @@ class LookApplet(Gtk.Window):
         self.set_skip_taskbar_hint(True)
         self.set_skip_pager_hint(True)
         self.set_resizable(False)
-        height = HEIGHT_TALL if kind in ("network", "bluetooth") else HEIGHT_COMPACT
+        if kind in ("network", "bluetooth"):
+            height = HEIGHT_TALL
+        else:
+            height = HEIGHT_COMPACT
         self.set_default_size(WIDTH, height)
         self.set_type_hint(Gdk.WindowTypeHint.DIALOG)
-        GLib.set_prgname("look-applet")
         self.stick()
 
         css = Gtk.CssProvider()
@@ -979,12 +985,16 @@ class LookApplet(Gtk.Window):
 
 
 def try_toggle_existing(kind: str) -> bool:
+    """Toggle a live applet. Stale sock files must not swallow the click."""
     path = sock_path(kind)
     if not path.exists():
         return False
     try:
         with socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM) as s:
-            s.sendto(b"toggle", str(path))
+            # connect() fails with ECONNREFUSED when nothing is bound — sendto alone
+            # would "succeed" on a leftover sock and the bar click would no-op.
+            s.connect(str(path))
+            s.send(b"toggle")
         return True
     except OSError:
         try:
@@ -1046,7 +1056,8 @@ def main() -> None:
     kind = sys.argv[1] if len(sys.argv) > 1 else ""
     if kind not in KINDS:
         print(
-            "usage: look-applet.py network|bluetooth|brightness|volume|performance",
+            "usage: look-applet.py "
+            "network|bluetooth|brightness|volume|performance",
             file=sys.stderr,
         )
         sys.exit(1)

@@ -1,0 +1,10 @@
+[Unit]
+Description=Portal service (i3: no graphical-session.target)
+After=dbus.socket
+Requires=dbus.socket
+
+[Service]
+Type=dbus
+BusName=org.freedesktop.portal.Desktop
+ExecStart=/usr/libexec/xdg-desktop-portal
+Slice=session.slice
