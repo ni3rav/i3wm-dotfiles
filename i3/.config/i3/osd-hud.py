@@ -70,6 +70,9 @@ def volume_state() -> tuple[int, bool]:
         return 0, False
 
 
+VOLUME_MAX_PCT = 150
+
+
 def set_volume(action: str) -> tuple[int, bool]:
     if action in ("up", "down"):
         # Volume keys unmute (same as most desktop OSDs); otherwise bar stays empty
@@ -84,6 +87,15 @@ def set_volume(action: str) -> tuple[int, bool]:
             check=False,
             stdout=subprocess.DEVNULL,
         )
+        pct, muted = volume_state()
+        if pct > VOLUME_MAX_PCT:
+            subprocess.run(
+                ["pactl", "set-sink-volume", "@DEFAULT_SINK@", f"{VOLUME_MAX_PCT}%"],
+                check=False,
+                stdout=subprocess.DEVNULL,
+            )
+            return VOLUME_MAX_PCT, muted
+        return pct, muted
     elif action == "mute":
         subprocess.run(
             ["pactl", "set-sink-mute", "@DEFAULT_SINK@", "toggle"],

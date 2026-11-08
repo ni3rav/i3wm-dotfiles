@@ -1,9 +1,7 @@
 #!/usr/bin/env bash
-# Toggle maximize: fill the current workspace area (bar stays visible).
-# This is not i3 fullscreen — use Super+Ctrl+f for that.
+# Toggle maximize: fill the workspace (polybar stays visible, no border).
+# True fullscreen (hides bar): F11 / Alt+Shift+f / Super+Ctrl+f
 set -euo pipefail
-
-MARK="__i3_maximized"
 
 python3 - <<'PY'
 import json
@@ -11,6 +9,8 @@ import subprocess
 import sys
 
 MARK = "__i3_maximized"
+BORDER_NORMAL = "border pixel 4"
+BORDER_MAX = "border pixel 0"
 
 
 def i3_get(msg: str):
@@ -53,6 +53,7 @@ if fullscreen:
 if MARK in marks:
     i3_cmd(f"unmark {MARK}")
     i3_cmd("floating disable")
+    i3_cmd(BORDER_NORMAL)
     sys.exit(0)
 
 rect = workspace.get("rect") or {}
@@ -65,6 +66,7 @@ if w <= 0 or h <= 0:
 
 i3_cmd(f"mark --add {MARK}")
 i3_cmd("floating enable")
+i3_cmd(BORDER_MAX)
 i3_cmd(f"resize set {w} px {h} px")
 i3_cmd(f"move position {x} px {y} px")
 PY

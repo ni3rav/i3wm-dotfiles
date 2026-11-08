@@ -366,8 +366,11 @@ def volume_state() -> tuple[int, bool]:
         return 0, False
 
 
+VOLUME_MAX_PCT = 150
+
+
 def set_volume_pct(pct: int) -> None:
-    pct = max(0, min(150, int(pct)))
+    pct = max(0, min(VOLUME_MAX_PCT, int(pct)))
     run(["pactl", "set-sink-volume", "@DEFAULT_SINK@", f"{pct}%"])
 
 
@@ -580,9 +583,9 @@ class LookApplet(Gtk.Window):
         root.pack_start(head, False, False, 0)
 
         self._vol_scale = Gtk.Scale.new_with_range(
-            Gtk.Orientation.HORIZONTAL, 0, 150, 1
+            Gtk.Orientation.HORIZONTAL, 0, VOLUME_MAX_PCT, 1
         )
-        self._vol_scale.set_value(min(150, pct))
+        self._vol_scale.set_value(min(VOLUME_MAX_PCT, pct))
         self._vol_scale.set_draw_value(False)
         self._vol_scale.add_mark(100, Gtk.PositionType.BOTTOM, None)
         self._vol_scale.connect("value-changed", self._on_vol_changed)
@@ -603,7 +606,7 @@ class LookApplet(Gtk.Window):
         self._mic_mute.connect("state-set", self._on_mic_mute)
         mic_row.pack_end(self._mic_mute, False, False, 0)
         root.pack_start(mic_row, False, False, 0)
-        self._set_status("0–150% (mark at 100%)")
+        self._set_status(f"0–{VOLUME_MAX_PCT}% (mark at 100%)")
 
     def _on_vol_changed(self, scale: Gtk.Scale) -> None:
         pct = int(scale.get_value())
